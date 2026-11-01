@@ -1,62 +1,61 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+int get_digits_sum(int num) {
+    int sum = 0;
+    num = abs(num); 
+    while (num > 0) {
+        sum += num % 10;
+        num /= 10;
+    }
+    return sum;
+}
 
 int main(void) {
-    int number;
-    int even_count = 0, odd_count = 0;
-    long long even_sum = 0, odd_sum = 0;
+    int number = -1; // Инициализируем любым числом, кроме 0
+    int harshad_count = 0, other_count = 0;
+    long long harshad_sum = 0, other_sum = 0;
+    int scan_status;
 
     printf("Вводите целые числа (0 для окончания ввода):\n");
 
-    while (1) {
-        if (scanf("%d", &number) != 1) {
-            printf("Ошибка ввода. Попробуйте еще раз.\n");
-            // Очистка буфера ввода в случае некорректного символа
-            while (getchar() != '\n');
+    printf("-> ");
+    // Цикл выполняется, пока ввод успешен И введенное число не равно 0
+    while ((scan_status = scanf("%d", &number)) != EOF && (scan_status == 0 || number != 0)) {
+        if (scan_status == 0) {
+            printf("Ошибка: введен неверный тип данных. Пожалуйста, введите целое число.\n");
+            while (getchar() != '\n'); // Очистка буфера от некорректных символов
+            printf("-> ");
             continue;
         }
 
-        if (number == 0) {
-            break;
-        }
+        int digits_sum = get_digits_sum(number);
 
-        if (number % 2 == 0) {
-            even_count++;
-            even_sum += number;
+        if (digits_sum != 0 && number % digits_sum == 0) {
+            harshad_count++;
+            harshad_sum += number;
         } else {
-            odd_count++;
-            odd_sum += number;
+            other_count++;
+            other_sum += number;
         }
+        
+        printf("-> ");
     }
 
     printf("\n--- Результаты классификации ---\n");
-    
-    if (even_count > 0) {
-        printf("Четные числа: количество = %d, среднее арифметическое = %.2f\n", 
-               even_count, (double)even_sum / even_count);
+    if (harshad_count > 0) {
+        printf("Числа Харшад: количество = %d, среднее = %.2f\n", 
+               harshad_count, (double)harshad_sum / harshad_count);
     } else {
-        printf("Четные числа не вводились.\n");
+        printf("Числа Харшад не вводились.\n");
     }
 
-    if (odd_count > 0) {
-        printf("Нечетные числа: количество = %d, среднее арифметическое = %.2f\n", 
-               odd_count, (double)odd_sum / odd_count);
+    if (other_count > 0) {
+        printf("Остальные числа: количество = %d, среднее = %.2f\n", 
+               other_count, (double)other_sum / other_count);
     } else {
-        printf("Нечетные числа не вводились.\n");
+        printf("Остальные числа не вводились.\n");
     }
 
     return 0;
 }
-
-/*
-================================================================================
-ОТВЕТ НА ТЕОРЕТИЧЕСКИЙ ВОПРОС:
-Влияние '&&' и '||' на порядок вычислений (ленивые вычисления / short-circuit evaluation):
-В C вычисление логических выражений происходит строго слева направо и останавливается, 
-как только итоговый результат становится очевиден:
-- Для '&&' (И): если левый операнд равен 0 (false), то всё выражение гарантированно 
-  будет false. Правый операнд ДАЖЕ НЕ ВЫЧИСЛЯЕТСЯ. Это позволяет, например, безопасно 
-  проверять деление на ноль: `if (x != 0 && y / x > 2)`.
-- Для '||' (ИЛИ): если левый операнд равен не нулю (true), то всё выражение гарантированно 
-  будет true. Правый операнд ДАЖЕ НЕ ВЫЧИСЛЯЕТСЯ.
-================================================================================
-*/
