@@ -1,46 +1,32 @@
 #include <stdio.h>
 #include <wchar.h>
-#include <wctype.h>
 #include <locale.h>
 
-/*
-================================================================================
-ОТВЕТ НА ТЕОРЕТИЧЕСКИЙ ВОПРОС:
-Разница между getchar() и getwchar() при обработке многобайтовых кодировок (UTF-8):
-1. getchar() считывает ровно ОДИН БАЙТ из потока. Если символ многобайтовый 
-   (например, кириллица в UTF-8 занимает 2 байта), то getchar() за один вызов 
-   считает только половинку символа. Это ломает классификацию через ctype.h.
-2. getwchar() считывает полный МНОГОБАЙТОВЫЙ символ (в соответствии с текущей 
-   локалью) и преобразует его в один широкий символ типа wchar_t (обычно 4 байта). 
-   Это позволяет корректно работать с любыми международными алфавитами.
-================================================================================
-*/
-
 int main(void) {
-    // Инициализация локали для корректной обработки UTF-8
     setlocale(LC_ALL, "");
 
     wint_t ch;
-    int spaces_count = 0;
-    int newline_count = 0;
-    int other_count = 0;
+    int sequence_count = 0;
+    int state = 0; 
 
     wprintf(L"Введите текст (для завершения введите '#'):\n");
 
     while ((ch = getwchar()) != WEOF && ch != L'#') {
-        if (ch == L' ') {
-            spaces_count++;
-        } else if (ch == L'\n') {
-            newline_count++;
+        if (ch == L'п' || ch == L'П') {
+            state = 1;
+        } else if (state == 1 && (ch == L'о' || ch == L'О')) {
+            state = 2;
+        } else if (state == 2 && (ch == L'к' || ch == L'К')) {
+            state = 3;
+        } else if (state == 3 && (ch == L'а' || ch == L'А')) {
+            sequence_count++;
+            state = 0; 
         } else {
-            other_count++;
+            state = 0; 
         }
     }
 
-    wprintf(L"\n--- Статистика широких символов ---\n");
-    wprintf(L"Количество широких пробелов: %d\n", spaces_count);
-    wprintf(L"Количество символов новой строки: %d\n", newline_count);
-    wprintf(L"Количество остальных символов: %d\n", other_count);
+    wprintf(L"\nКоличество вхождений последовательности \"пока\": %d\n", sequence_count);
 
     return 0;
 }
